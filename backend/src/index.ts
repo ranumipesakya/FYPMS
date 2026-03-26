@@ -1,0 +1,66 @@
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+
+dotenv.config();
+
+const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    methods: ["GET", "POST"]
+  }
+});
+
+const PORT = process.env.PORT || 5000;
+
+// Middleware
+app.use(express.json());
+app.use(cors());
+app.use(helmet({
+  crossOriginResourcePolicy: false,
+}));
+app.use(morgan('dev'));
+
+// Database Connection
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/fypms')
+  .then(() => console.log('✅ Connected to MongoDB Atlas'))
+  .catch((err) => console.error('❌ MongoDB Connection Error:', err));
+
+// Socket.io Real-time Logic
+io.on('connection', (socket) => {
+  console.log('👤 A user connected:', socket.id);
+
+  socket.on('join_chat', (roomId) => {
+    socket.join(roomId);
+    console.log(`💬 User joined room: ${roomId}`);
+  });
+
+  socket.on('send_message', (data) => {
+    io.to(data.roomId).emit('receive_message', data);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('👋 A user disconnected');
+  });
+});
+
+import authRoutes from './routes/authRoutes.js';
+
+// Routes
+app.use('/api/auth', authRoutes);
+
+app.get('/', (req, res) => {
+  res.send('FYPMS API is running...');
+});
+
+// Start Server
+httpServer.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
