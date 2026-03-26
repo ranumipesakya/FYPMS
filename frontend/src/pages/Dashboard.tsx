@@ -21,16 +21,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const SUPERVISORS = [
-  "Ms. Maithri Chandima", "Ms. Pavithra Subhashini", "Dr. Isuru Koswatte", 
-  "Dr. Damayanthi Dahanayake", "Ms. Thisarani Wickramasinghe", "Mr. Chamil Gunarathna",
-  "Ms. Lakni Peiris", "Ms. Githmi Charundi Perera", "Ms. Sanuli Weerasinghe",
-  "Ms. Dharani Rajasinghe", "Ms. Chathurma Wijesinghe", "Ms. Ashini Wanasinghe",
-  "Ms. Tharushi Attanayake", "Ms. Sachini Tharaka", "Ms. Hiruni Weerasinghe",
-  "Mr. Hasantha Dissanayake", "Ms. Hirushi Dilpriya", "Ms. Kushani Perera",
-  "Ms. Demini Rajapaksha", "Ms. Sandyani De Silva", "Ms. Madhavi Madushani",
-  "Ms. Dulanjali Wijesekara", "Ms. Shehani Joseph"
-];
+// Supervisors are now fetched from the database dynamically
 
 const STAGES = [
   { id: 1, title: 'Profile Setup', icon: UserIcon },
@@ -56,10 +47,21 @@ const Dashboard: React.FC = () => {
   });
 
   const [project, setProject] = useState<any>(null);
+  const [supervisors, setSupervisors] = useState<any[]>([]);
 
   useEffect(() => {
     fetchProject();
+    fetchSupervisors();
   }, []);
+
+  const fetchSupervisors = async () => {
+    try {
+      const { data } = await axios.get('http://localhost:5000/api/auth/supervisors');
+      setSupervisors(data);
+    } catch (err) {
+      console.error('Error fetching supervisors:', err);
+    }
+  };
 
   const fetchProject = async () => {
     try {
@@ -88,7 +90,7 @@ const Dashboard: React.FC = () => {
         const { data } = await axios.post('http://localhost:5000/api/projects', {
           title: formData.projectTitle,
           description: formData.description,
-          supervisorName: formData.supervisor
+          supervisorId: formData.supervisor
         }, {
           headers: { Authorization: `Bearer ${user?.token}` }
         });
@@ -150,7 +152,7 @@ const Dashboard: React.FC = () => {
               onChange={(e) => setFormData({...formData, supervisor: e.target.value})}
             >
               <option value="" className="bg-[#0f172a]">Select Supervisor...</option>
-              {SUPERVISORS.map(s => <option key={s} value={s} className="bg-[#0f172a]">{s}</option>)}
+              {supervisors.map(s => <option key={s._id} value={s._id} className="bg-[#0f172a]">{s.name}</option>)}
             </select>
             <ChevronRight size={24} className="absolute right-6 top-1/2 -translate-y-1/2 text-brand-blue rotate-90" />
           </div>

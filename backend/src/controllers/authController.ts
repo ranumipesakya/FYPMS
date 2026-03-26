@@ -76,3 +76,12 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     res.status(400).json({ message: error.message });
   }
 };
+
+export const getSupervisors = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const supervisors = await User.find({ role: 'supervisor' }).select('name email');
+    res.json(supervisors);
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};
