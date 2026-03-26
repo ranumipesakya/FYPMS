@@ -16,6 +16,20 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         return;
     }
 
+    // Role-specific email validation
+    if (role === 'student' && !email.endsWith('@students.nsbm.ac.lk')) {
+      res.status(400).json({ message: 'Students must use @students.nsbm.ac.lk email' });
+      return;
+    }
+    if (role === 'supervisor' && !email.endsWith('@lecturer.nsbm.ac.lk')) {
+      res.status(400).json({ message: 'Supervisors must use @lecturer.nsbm.ac.lk email' });
+      return;
+    }
+    if (role === 'admin' && !email.endsWith('@nsbm.ac.lk')) {
+      res.status(400).json({ message: 'Admin must use @nsbm.ac.lk email' });
+      return;
+    }
+
     const user = await User.create({
       name,
       email,

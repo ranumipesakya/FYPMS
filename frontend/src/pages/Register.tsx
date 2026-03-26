@@ -138,7 +138,12 @@ const Register: React.FC = () => {
                  <div className="relative group">
                     <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-brand-blue" />
                     <input 
-                      type="email" required placeholder="student@nsbm.ac.lk"
+                      type="email" required 
+                      placeholder={
+                        formData.role === 'student' ? 'student@students.nsbm.ac.lk' :
+                        formData.role === 'supervisor' ? 'lecturer@lecturer.nsbm.ac.lk' :
+                        'admin@nsbm.ac.lk'
+                      }
                       className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-bold outline-none ring-brand-blue/50 focus:ring-2"
                       value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
                     />
