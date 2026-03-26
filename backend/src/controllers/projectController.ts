@@ -4,14 +4,17 @@ import User from '../models/User.js';
 
 export const createProject = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { title, description, supervisorId } = req.body;
+    const { title, description, supervisorEmail } = req.body;
     const studentId = (req as any).user._id;
+
+    // Resolve supervisor by email
+    const supervisor = await User.findOne({ email: supervisorEmail });
 
     const project = await Project.create({
       title,
       description,
       studentId,
-      supervisorId,
+      supervisorId: supervisor?._id,
       status: 'pending'
     });
 
