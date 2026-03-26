@@ -29,10 +29,9 @@ const UserSchema = new Schema<IUser>({
   assignedStudents: [{ type: Schema.Types.ObjectId, ref: 'User' }]
 }, { timestamps: true });
 
-UserSchema.pre('save', async function (this: any, next: any) {
-  if (!this.isModified('password')) return next();
+UserSchema.pre('save', async function (this: any) {
+  if (!this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, 10);
-  next();
 });
 
 UserSchema.methods.comparePassword = async function (this: any, password: string) {
