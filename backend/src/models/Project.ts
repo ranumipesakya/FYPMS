@@ -27,6 +27,7 @@ export interface IProject extends Document {
   demoLink?: string;
   currentMilestone: Milestone;
   tags: string[];
+  feedback?: string;
 }
 
 const ProjectSchema = new Schema<IProject>({
@@ -39,7 +40,8 @@ const ProjectSchema = new Schema<IProject>({
   githubLink: { type: String },
   demoLink: { type: String },
   currentMilestone: { type: String, enum: Object.values(Milestone), default: Milestone.PROPOSAL },
-  tags: [{ type: String }]
+  tags: [{ type: String }],
+  feedback: { type: String }
 }, { timestamps: true });
 
 export default mongoose.model<IProject>('Project', ProjectSchema);

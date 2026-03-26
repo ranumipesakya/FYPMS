@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
 import { useAuth } from '../store/AuthContext';
 import { 
   User as UserIcon, 
@@ -54,12 +55,53 @@ const Dashboard: React.FC = () => {
     techStack: '',
   });
 
-  const handleNext = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+  const [project, setProject] = useState<any>(null);
+
+  useEffect(() => {
+    fetchProject();
+  }, []);
+
+  const fetchProject = async () => {
+    try {
+      const { data } = await axios.get('http://localhost:5000/api/projects/student', {
+        headers: { Authorization: `Bearer ${user?.token}` }
+      });
+      if (data) {
+        setProject(data);
+        setCurrentStep(3);
+        setFormData(prev => ({
+          ...prev,
+          projectTitle: data.title,
+          description: data.description,
+          supervisor: data.supervisorId?.name || ''
+        }));
+      }
+    } catch (err) {
+      console.error('Error fetching project:', err);
+    }
+  };
+
+  const handleNext = async () => {
+    if (currentStep === 2) {
+      setIsLoading(true);
+      try {
+        const { data } = await axios.post('http://localhost:5000/api/projects', {
+          title: formData.projectTitle,
+          description: formData.description,
+          supervisorName: formData.supervisor
+        }, {
+          headers: { Authorization: `Bearer ${user?.token}` }
+        });
+        setProject(data);
+        setCurrentStep(3);
+      } catch (err) {
+        console.error('Error creating project:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
       setCurrentStep(prev => prev + 1);
-    }, 800);
+    }
   };
 
   const handleBack = () => setCurrentStep(prev => prev - 1);
@@ -201,9 +243,10 @@ const Dashboard: React.FC = () => {
              <div className="absolute top-0 right-0 w-32 h-32 bg-brand-green/10 blur-3xl -z-10 animate-pulse"></div>
              <div className="flex justify-between items-start mb-10">
                 <div>
-                   <h2 className="text-3xl font-black text-white mb-2 font-outfit">{formData.projectTitle}</h2>
-                   <div className="flex items-center gap-3 text-brand-green font-black text-xs uppercase tracking-widest">
-                      <Sparkles size={14} /> Proposal Submitted - Under Review
+                   <h2 className="text-3xl font-black text-white mb-2 font-outfit">{project?.title || formData.projectTitle}</h2>
+                   <div className={`flex items-center gap-3 font-black text-xs uppercase tracking-widest ${project?.status === 'approved' ? 'text-brand-green' : project?.status === 'rejected' ? 'text-red-500' : 'text-brand-blue'}`}>
+                      {project?.status === 'approved' ? <CheckCircle2 size={14} /> : project?.status === 'rejected' ? <AlertCircle size={14} /> : <Sparkles size={14} />}
+                      {project?.status === 'approved' ? 'Proposal Approved' : project?.status === 'rejected' ? 'Proposal Rejected' : 'Proposal Submitted - Under Review'}
                    </div>
                 </div>
                 <div className="bg-white/5 p-3 rounded-2xl flex items-center gap-3">
@@ -255,10 +298,12 @@ const Dashboard: React.FC = () => {
               <div className="w-24 h-24 bg-gradient-to-tr from-brand-blue to-teal-400 rounded-3xl shadow-2xl flex items-center justify-center text-white mb-6 rotate-3">
                  <Users size={48} />
               </div>
-              <h3 className="text-xl font-black text-white mb-1">{formData.supervisor}</h3>
+              <h3 className="text-xl font-black text-white mb-1">{project?.supervisorId?.name || formData.supervisor}</h3>
               <p className="text-xs font-black text-brand-blue uppercase tracking-widest mb-6">Assigned Mentor</p>
               <div className="h-px w-full bg-white/10 mb-6"></div>
-              <p className="text-sm text-slate-400 leading-relaxed italic">"Ready to review your proposal details. Please check the feedback once I approve the initial draft."</p>
+              <p className="text-sm text-slate-400 leading-relaxed italic">
+                {project?.feedback || "Ready to review your proposal details. Please check the feedback once I approve the initial draft."}
+              </p>
            </div>
         </div>
       </div>
