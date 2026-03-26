@@ -8,7 +8,7 @@ const generateToken = (id: string) => {
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, email, password, role, department } = req.body;
+    const { name, email, password, role } = req.body;
 
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -20,8 +20,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       name,
       email,
       password,
-      role,
-      department
+      role
     });
 
     if (user) {

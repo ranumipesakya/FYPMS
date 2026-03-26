@@ -7,7 +7,6 @@ import {
   Mail, 
   Lock, 
   ShieldCheck, 
-  Building2, 
   ArrowRight, 
   Sparkles,
   UserCircle 
@@ -24,8 +23,7 @@ const Register: React.FC = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'student' as 'student' | 'supervisor' | 'admin',
-    department: 'Computing'
+    role: 'student' as 'student' | 'supervisor' | 'admin'
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,8 +41,7 @@ const Register: React.FC = () => {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        role: formData.role,
-        department: formData.department
+        role: formData.role
       });
       
       login(data);
@@ -148,21 +145,7 @@ const Register: React.FC = () => {
                  </div>
               </div>
 
-              {/* Department */}
-              <div className="space-y-2">
-                 <label className="text-[10px] font-black text-brand-blue uppercase tracking-[0.2em] ml-2">Faculty / Department</label>
-                 <div className="relative group">
-                    <Building2 size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-brand-blue" />
-                    <select 
-                      className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-bold outline-none ring-brand-blue/50 focus:ring-2 appearance-none cursor-pointer"
-                      value={formData.department} onChange={e => setFormData({...formData, department: e.target.value})}
-                    >
-                       <option value="Computing" className="bg-[#0f172a]">Faculty of Computing</option>
-                       <option value="Business" className="bg-[#0f172a]">Faculty of Business</option>
-                       <option value="Engineering" className="bg-[#0f172a]">Faculty of Engineering</option>
-                    </select>
-                 </div>
-              </div>
+              {/* Department Removed as per request */}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                  {/* Password */}
