@@ -10,6 +10,11 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, email, password, role } = req.body;
 
+    if (password.length < 8) {
+      res.status(400).json({ message: 'Password must be at least 8 characters long' });
+      return;
+    }
+
     const userExists = await User.findOne({ email });
     if (userExists) {
         res.status(400).json({ message: 'User already exists' });

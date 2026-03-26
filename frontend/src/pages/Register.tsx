@@ -159,7 +159,7 @@ const Register: React.FC = () => {
                     <div className="relative group">
                        <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-brand-blue" />
                        <input 
-                         type="password" required placeholder="••••••••"
+                         type="password" required minLength={8} placeholder="••••••••"
                          className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-bold outline-none ring-brand-blue/50 focus:ring-2"
                          value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})}
                        />
@@ -172,7 +172,7 @@ const Register: React.FC = () => {
                     <div className="relative group">
                        <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-brand-blue" />
                        <input 
-                         type="password" required placeholder="••••••••"
+                         type="password" required minLength={8} placeholder="••••••••"
                          className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-bold outline-none ring-brand-blue/50 focus:ring-2"
                          value={formData.confirmPassword} onChange={e => setFormData({...formData, confirmPassword: e.target.value})}
                        />

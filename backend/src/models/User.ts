@@ -22,7 +22,7 @@ const UserSchema = new Schema<IUser>({
     match: [/nsbm\.ac\.lk$/, 'Please use a valid institution email']
   },
   studentNumber: { type: String },
-  password: { type: String, required: true },
+  password: { type: String, required: true, minlength: 8 },
   role: { type: String, enum: ['student', 'supervisor', 'admin'], default: 'student' },
   avatar: { type: String },
   assignedSupervisor: { type: Schema.Types.ObjectId, ref: 'User' },
