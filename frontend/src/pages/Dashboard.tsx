@@ -21,6 +21,12 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+type SupervisorOption = {
+  _id?: string;
+  name: string;
+  email: string;
+};
+
 const SUPERVISORS = [
   { name: "Ms. Maithri Chandima", email: "maithri@lecturer.nsbm.ac.lk" },
   { name: "Ms. Pavithra Subhashini", email: "pavithra@lecturer.nsbm.ac.lk" },
@@ -71,7 +77,7 @@ const Dashboard: React.FC = () => {
   });
 
   const [project, setProject] = useState<any>(null);
-  const [supervisors, setSupervisors] = useState<any[]>([]);
+  const [supervisors, setSupervisors] = useState<SupervisorOption[]>([]);
 
   useEffect(() => {
     fetchProject();
@@ -81,7 +87,7 @@ const Dashboard: React.FC = () => {
   const fetchSupervisors = async () => {
     // We already have the list in SUPERVISORS, but we can also fetch from DB to see if others exist
     try {
-      const { data } = await axios.get('http://localhost:5000/api/auth/supervisors');
+      const { data } = await axios.get<SupervisorOption[]>('http://localhost:5001/api/auth/supervisors');
       // Merge registered supervisors with the list
       const registeredEmails = data.map((d: any) => d.email);
       const allSupervisors = [...SUPERVISORS.filter(s => !registeredEmails.includes(s.email)), ...data];
@@ -93,7 +99,7 @@ const Dashboard: React.FC = () => {
 
   const fetchProject = async () => {
     try {
-      const { data } = await axios.get('http://localhost:5000/api/projects/student', {
+      const { data } = await axios.get('http://localhost:5001/api/projects/student', {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       if (data) {
@@ -115,14 +121,36 @@ const Dashboard: React.FC = () => {
     if (currentStep === 2) {
       setIsLoading(true);
       try {
-        const { data } = await axios.post('http://localhost:5000/api/projects', {
+        const selectedSupervisor = supervisors.find((s) => s.email === formData.supervisor || s._id === formData.supervisor);
+        const payload = {
           title: formData.projectTitle,
           description: formData.description,
-          supervisorEmail: formData.supervisor // Send email instead of ID
+          studentNumber: formData.studentNumber,
+          supervisorId: selectedSupervisor?._id,
+          supervisorEmail: selectedSupervisor?.email || formData.supervisor
+        };
+
+        const { data } = await axios.post('http://localhost:5001/api/projects', {
+          ...payload
         }, {
           headers: { Authorization: `Bearer ${user?.token}` }
         });
-        setProject(data);
+
+        const createdProject = data?.project || data;
+
+        if (selectedFile && createdProject?._id) {
+          const form = new FormData();
+          form.append('projectId', createdProject._id);
+          form.append('type', 'proposal');
+          form.append('version', 'v1');
+          form.append('file', selectedFile);
+
+          await axios.post('http://localhost:5001/api/projects/submissions/upload', form, {
+            headers: { Authorization: `Bearer ${user?.token}` }
+          });
+        }
+
+        setProject(createdProject);
         setCurrentStep(3);
       } catch (err) {
         console.error('Error creating project:', err);

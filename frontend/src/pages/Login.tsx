@@ -18,7 +18,7 @@ const Login: React.FC = () => {
     setError('');
     
     try {
-      const { data } = await axios.post('http://localhost:5000/api/auth/login', {
+      const { data } = await axios.post('http://localhost:5001/api/auth/login', {
         email,
         password
       });

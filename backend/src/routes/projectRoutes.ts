@@ -1,17 +1,45 @@
 import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 import { 
   createProject, 
   getAssignedProjects, 
   updateProjectStatus, 
-  getStudentProject 
+  getStudentProject,
+  uploadSubmission,
+  getSupervisorSubmissions,
+  openOfficeHoursForAll
 } from '../controllers/projectController.js';
 import { protect, supervisor } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadDir = path.resolve(__dirname, '../../uploads');
+
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, uploadDir),
+  filename: (_req, file, cb) => {
+    const safeName = file.originalname.replace(/\s+/g, '-');
+    cb(null, `${Date.now()}-${safeName}`);
+  }
+});
+
+const upload = multer({ storage });
+
 router.post('/', protect, createProject);
 router.get('/assigned', protect, supervisor, getAssignedProjects);
 router.get('/student', protect, getStudentProject);
 router.put('/:id/status', protect, supervisor, updateProjectStatus);
+router.post('/submissions/upload', protect, upload.single('file'), uploadSubmission);
+router.get('/submissions/supervisor', protect, supervisor, getSupervisorSubmissions);
+router.post('/office-hours/open', protect, supervisor, openOfficeHoursForAll);
 
 export default router;
