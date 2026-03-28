@@ -95,7 +95,7 @@ export const updateProjectStatus = async (req: Request, res: Response): Promise<
 export const getStudentProject = async (req: Request, res: Response): Promise<void> => {
   try {
     const studentId = (req as any).user._id;
-    const project = await Project.findOne({ studentId }).populate('supervisorId', 'name');
+    const project = await Project.findOne({ studentId }).populate('supervisorId', 'name email');
     res.json(project);
   } catch (error: any) {
     res.status(400).json({ message: error.message });

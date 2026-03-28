@@ -156,34 +156,15 @@ const SupervisorDashboard: React.FC = () => {
               </div>
             </div>
 
-            <h3 className="text-2xl font-black text-white mb-1 leading-tight font-outfit">{project.studentId?.name || 'Anonymous Student'}</h3>
-            <p className="text-slate-500 text-xs font-bold mb-4 uppercase tracking-[0.2em]">{project.studentId?.studentNumber || 'N/A'}</p>
-
-            <div className="bg-white/5 p-4 rounded-3xl mb-4">
-              <p className="text-brand-blue text-sm font-black truncate mb-1">{project.title}</p>
-              <p className="text-slate-400 text-xs font-medium line-clamp-2">{project.description}</p>
-            </div>
-
-            <div className="bg-white/5 p-4 rounded-3xl mb-6">
-              <p className="text-white text-xs font-black uppercase tracking-wider mb-3">Student Uploads</p>
-              {(uploadsByProject[project._id] || []).length === 0 && (
-                <p className="text-slate-500 text-xs font-medium">No uploads yet.</p>
-              )}
-              {(uploadsByProject[project._id] || []).slice(0, 3).map((file) => {
-                const href = file.fileUrl.startsWith('http') ? file.fileUrl : `http://localhost:5001${file.fileUrl}`;
-                return (
-                  <a
-                    key={file._id}
-                    href={href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-2 text-xs text-brand-blue hover:text-white transition-colors mb-2"
-                  >
-                    <FileText size={14} />
-                    <span className="truncate">{file.originalFilename}</span>
-                  </a>
-                );
-              })}
+            <div className="bg-white/5 p-4 rounded-3xl mb-6 space-y-3">
+              <div>
+                <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Project Name</p>
+                <p className="text-brand-blue text-sm font-black truncate">{project.title || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Student Name</p>
+                <p className="text-white text-sm font-black truncate">{project.studentId?.name || 'Anonymous Student'}</p>
+              </div>
             </div>
 
             <div className="mt-auto space-y-6">
