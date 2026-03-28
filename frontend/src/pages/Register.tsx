@@ -8,8 +8,7 @@ import {
   Lock, 
   ShieldCheck, 
   ArrowRight, 
-  Sparkles,
-  UserCircle 
+  Sparkles
 } from 'lucide-react';
 
 const Register: React.FC = () => {
@@ -22,8 +21,7 @@ const Register: React.FC = () => {
     name: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    role: 'student' as 'student' | 'supervisor' | 'admin'
+    confirmPassword: ''
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,7 +39,7 @@ const Register: React.FC = () => {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        role: formData.role
+        role: 'student'
       });
       
       login(data);
@@ -101,7 +99,7 @@ const Register: React.FC = () => {
            )}
 
            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6">
                  {/* Name */}
                  <div className="space-y-2">
                     <label className="text-[10px] font-black text-brand-blue uppercase tracking-[0.2em] ml-2">Full Name</label>
@@ -115,21 +113,6 @@ const Register: React.FC = () => {
                     </div>
                  </div>
 
-                 {/* Role Selection */}
-                 <div className="space-y-2">
-                    <label className="text-[10px] font-black text-brand-blue uppercase tracking-[0.2em] ml-2">Portal Access Role</label>
-                    <div className="relative group">
-                       <UserCircle size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-brand-blue" />
-                       <select 
-                         className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-bold outline-none ring-brand-blue/50 focus:ring-2 appearance-none cursor-pointer"
-                         value={formData.role} onChange={e => setFormData({...formData, role: e.target.value as any})}
-                       >
-                          <option value="student" className="bg-[#0f172a]">Student</option>
-                          <option value="supervisor" className="bg-[#0f172a]">Supervisor</option>
-                          <option value="admin" className="bg-[#0f172a]">Admin</option>
-                       </select>
-                    </div>
-                 </div>
               </div>
 
               {/* Email */}
@@ -139,11 +122,7 @@ const Register: React.FC = () => {
                     <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-brand-blue" />
                     <input 
                       type="email" required 
-                      placeholder={
-                        formData.role === 'student' ? 'student@students.nsbm.ac.lk' :
-                        formData.role === 'supervisor' ? 'lecturer@lecturer.nsbm.ac.lk' :
-                        'admin@nsbm.ac.lk'
-                      }
+                      placeholder="student@students.nsbm.ac.lk"
                       className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-bold outline-none ring-brand-blue/50 focus:ring-2"
                       value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
                     />

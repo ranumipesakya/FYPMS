@@ -9,9 +9,15 @@ const generateToken = (id: string) => {
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, email, password, role } = req.body;
+    const normalizedRole = role || 'student';
 
     if (password.length < 8) {
       res.status(400).json({ message: 'Password must be at least 8 characters long' });
+      return;
+    }
+
+    if (normalizedRole !== 'student') {
+      res.status(403).json({ message: 'Supervisor/Admin accounts are initialized by system. Please login.' });
       return;
     }
 
@@ -21,17 +27,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         return;
     }
 
-    // Role-specific email validation
-    if (role === 'student' && !email.endsWith('@students.nsbm.ac.lk')) {
+    if (!email.endsWith('@students.nsbm.ac.lk')) {
       res.status(400).json({ message: 'Students must use @students.nsbm.ac.lk email' });
-      return;
-    }
-    if (role === 'supervisor' && !email.endsWith('@lecturer.nsbm.ac.lk')) {
-      res.status(400).json({ message: 'Supervisors must use @lecturer.nsbm.ac.lk email' });
-      return;
-    }
-    if (role === 'admin' && !email.endsWith('@nsbm.ac.lk')) {
-      res.status(400).json({ message: 'Admin must use @nsbm.ac.lk email' });
       return;
     }
 
@@ -39,7 +36,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       name,
       email,
       password,
-      role
+      role: 'student'
     });
 
     if (user) {

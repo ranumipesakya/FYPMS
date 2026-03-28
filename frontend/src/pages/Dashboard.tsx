@@ -27,32 +27,6 @@ type SupervisorOption = {
   email: string;
 };
 
-const SUPERVISORS = [
-  { name: "Ms. Maithri Chandima", email: "maithri@lecturer.nsbm.ac.lk" },
-  { name: "Ms. Pavithra Subhashini", email: "pavithra@lecturer.nsbm.ac.lk" },
-  { name: "Dr. Isuru Koswatte", email: "isuru@lecturer.nsbm.ac.lk" },
-  { name: "Dr. Damayanthi Dahanayake", email: "damayanthi@lecturer.nsbm.ac.lk" },
-  { name: "Ms. Thisarani Wickramasinghe", email: "thisarani@lecturer.nsbm.ac.lk" },
-  { name: "Mr. Chamil Gunarathna", email: "chamil@lecturer.nsbm.ac.lk" },
-  { name: "Ms. Lakni Peiris", email: "lakni@lecturer.nsbm.ac.lk" },
-  { name: "Ms. Githmi Charundi Perera", email: "githmi@lecturer.nsbm.ac.lk" },
-  { name: "Ms. Sanuli Weerasinghe", email: "sanuli@lecturer.nsbm.ac.lk" },
-  { name: "Ms. Dharani Rajasinghe", email: "dharani@lecturer.nsbm.ac.lk" },
-  { name: "Ms. Chathurma Wijesinghe", email: "chathurma@lecturer.nsbm.ac.lk" },
-  { name: "Ms. Ashini Wanasinghe", email: "ashini@lecturer.nsbm.ac.lk" },
-  { name: "Ms. Tharushi Attanayake", email: "tharushi@lecturer.nsbm.ac.lk" },
-  { name: "Ms. Sachini Tharaka", email: "sachini@lecturer.nsbm.ac.lk" },
-  { name: "Ms. Hiruni Weerasinghe", email: "hiruni@lecturer.nsbm.ac.lk" },
-  { name: "Mr. Hasantha Dissanayake", email: "hasantha@lecturer.nsbm.ac.lk" },
-  { name: "Ms. Hirushi Dilpriya", email: "hirushi@lecturer.nsbm.ac.lk" },
-  { name: "Ms. Kushani Perera", email: "kushani@lecturer.nsbm.ac.lk" },
-  { name: "Ms. Demini Rajapaksha", email: "demini@lecturer.nsbm.ac.lk" },
-  { name: "Ms. Sandyani De Silva", email: "sandyani@lecturer.nsbm.ac.lk" },
-  { name: "Ms. Madhavi Madushani", email: "madhavi@lecturer.nsbm.ac.lk" },
-  { name: "Ms. Dulanjali Wijesekara", email: "dulanjali@lecturer.nsbm.ac.lk" },
-  { name: "Ms. Shehani Joseph", email: "shehani@lecturer.nsbm.ac.lk" }
-];
-
 const STAGES = [
   { id: 1, title: 'Profile Setup', icon: UserIcon },
   { id: 2, title: 'Project Proposal', icon: FileText },
@@ -85,15 +59,12 @@ const Dashboard: React.FC = () => {
   }, []);
 
   const fetchSupervisors = async () => {
-    // We already have the list in SUPERVISORS, but we can also fetch from DB to see if others exist
     try {
       const { data } = await axios.get<SupervisorOption[]>('http://localhost:5001/api/auth/supervisors');
-      // Merge registered supervisors with the list
-      const registeredEmails = data.map((d: any) => d.email);
-      const allSupervisors = [...SUPERVISORS.filter(s => !registeredEmails.includes(s.email)), ...data];
-      setSupervisors(registeredEmails.length > 0 ? allSupervisors : SUPERVISORS);
+      setSupervisors(data);
     } catch (err) {
-      setSupervisors(SUPERVISORS);
+      console.error('Error fetching supervisors:', err);
+      setSupervisors([]);
     }
   };
 
