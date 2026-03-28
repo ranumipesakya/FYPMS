@@ -10,37 +10,51 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 
+import authRoutes from './routes/authRoutes.js';
+import projectRoutes from './routes/projectRoutes.js';
+
 dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
+
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
-    methods: ["GET", "POST"]
-  }
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    methods: ['GET', 'POST'],
+  },
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(express.json());
 app.use(cors());
-app.use(helmet({
-  crossOriginResourcePolicy: false,
-}));
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  })
+);
 app.use(morgan('dev'));
 
+// Resolve paths
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 const uploadsDir = path.resolve(__dirname, '../uploads');
+
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
+
+console.log('📁 Serving uploads from:', uploadsDir);
+
+// Serve uploaded files publicly
 app.use('/uploads', express.static(uploadsDir));
 
 // Database Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/fypms')
+mongoose
+  .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/fypms')
   .then(() => console.log('✅ Connected to MongoDB Atlas'))
   .catch((err) => console.error('❌ MongoDB Connection Error:', err));
 
@@ -62,14 +76,11 @@ io.on('connection', (socket) => {
   });
 });
 
-import authRoutes from './routes/authRoutes.js';
-import projectRoutes from './routes/projectRoutes.js';
-
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
   res.send('FYPMS API is running...');
 });
 

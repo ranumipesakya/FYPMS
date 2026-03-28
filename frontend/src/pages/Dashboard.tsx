@@ -27,6 +27,14 @@ type SupervisorOption = {
   email: string;
 };
 
+type SubmissionItem = {
+  _id: string;
+  fileUrl: string;
+  originalFilename: string;
+  type: string;
+  createdAt?: string;
+};
+
 const STAGES = [
   { id: 1, title: 'Profile Setup', icon: UserIcon },
   { id: 2, title: 'Project Proposal', icon: FileText },
@@ -52,11 +60,31 @@ const Dashboard: React.FC = () => {
 
   const [project, setProject] = useState<any>(null);
   const [supervisors, setSupervisors] = useState<SupervisorOption[]>([]);
+  const [studentSubmissions, setStudentSubmissions] = useState<SubmissionItem[]>([]);
 
   useEffect(() => {
     fetchProject();
     fetchSupervisors();
   }, []);
+
+  useEffect(() => {
+    if (!user?.token) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      fetchProject();
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [user?.token]);
+
+  useEffect(() => {
+    if (!user?.token) {
+      return;
+    }
+    fetchStudentSubmissions();
+  }, [project?._id, user?.token]);
 
   const fetchSupervisors = async () => {
     try {
@@ -86,6 +114,29 @@ const Dashboard: React.FC = () => {
     } catch (err) {
       console.error('Error fetching project:', err);
     }
+  };
+
+  const fetchStudentSubmissions = async () => {
+    try {
+      const { data } = await axios.get<SubmissionItem[]>('http://localhost:5001/api/projects/submissions/student', {
+        headers: { Authorization: `Bearer ${user?.token}` }
+      });
+      setStudentSubmissions(data || []);
+    } catch (err) {
+      console.error('Error fetching submissions:', err);
+      setStudentSubmissions([]);
+    }
+  };
+
+  const handleViewReports = () => {
+    const proposal = studentSubmissions.find((s) => s.type === 'proposal') || studentSubmissions[0];
+    if (!proposal?.fileUrl) {
+      window.alert('No uploaded proposal PDF found yet.');
+      return;
+    }
+
+    const href = proposal.fileUrl.startsWith('http') ? proposal.fileUrl : `http://localhost:5001${proposal.fileUrl}`;
+    window.open(href, '_blank');
   };
 
   const handleNext = async () => {
@@ -295,7 +346,7 @@ const Dashboard: React.FC = () => {
              </div>
 
              <div className="grid grid-cols-2 gap-4">
-                <button className="bg-brand-blue p-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-xl shadow-brand-blue/20"><FolderKanban size={18} /> View Reports</button>
+                <button onClick={handleViewReports} className="bg-brand-blue p-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-xl shadow-brand-blue/20"><FolderKanban size={18} /> View Reports</button>
                 <button className="bg-white/5 border border-white/10 p-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-white/10"><MessageSquare size={18} /> Chat with {formData.supervisor.split(' ')[1]}</button>
              </div>
           </div>

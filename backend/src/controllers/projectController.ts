@@ -79,7 +79,7 @@ export const updateProjectStatus = async (req: Request, res: Response): Promise<
       id,
       { status, feedback },
       { new: true }
-    );
+    ).populate('studentId', 'name studentNumber email');
 
     if (!project) {
       res.status(404).json({ message: 'Project not found' });
@@ -172,6 +172,30 @@ export const getSupervisorSubmissions = async (req: Request, res: Response): Pro
     const submissions = await Submission.find({ projectId: { $in: projectIds } })
       .populate('userId', 'name studentNumber email')
       .populate('projectId', 'title')
+      .sort({ createdAt: -1 });
+
+    res.json(submissions);
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const getStudentSubmissions = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const studentId = (req as any).user?._id;
+
+    if (!studentId) {
+      res.status(401).json({ message: 'Unauthorized user' });
+      return;
+    }
+
+    const project = await Project.findOne({ studentId }).select('_id');
+    if (!project) {
+      res.json([]);
+      return;
+    }
+
+    const submissions = await Submission.find({ projectId: project._id, userId: studentId })
       .sort({ createdAt: -1 });
 
     res.json(submissions);

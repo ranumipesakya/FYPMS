@@ -10,6 +10,7 @@ import {
   getStudentProject,
   uploadSubmission,
   getSupervisorSubmissions,
+  getStudentSubmissions,
   openOfficeHoursForAll
 } from '../controllers/projectController.js';
 import { protect, supervisor } from '../middleware/authMiddleware.js';
@@ -40,6 +41,7 @@ router.get('/student', protect, getStudentProject);
 router.put('/:id/status', protect, supervisor, updateProjectStatus);
 router.post('/submissions/upload', protect, upload.single('file'), uploadSubmission);
 router.get('/submissions/supervisor', protect, supervisor, getSupervisorSubmissions);
+router.get('/submissions/student', protect, getStudentSubmissions);
 router.post('/office-hours/open', protect, supervisor, openOfficeHoursForAll);
 
 export default router;
