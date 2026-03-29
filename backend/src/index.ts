@@ -13,6 +13,7 @@ import { fileURLToPath } from 'url';
 import authRoutes from './routes/authRoutes.js';
 import projectRoutes from './routes/projectRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
+import submissionRoutes from './routes/submissionRoutes.js';
 import ChatMessage from './models/ChatMessage.js';
 import User from './models/User.js';
 import { sendChatNotification } from './utils/mailer.js';
@@ -132,6 +133,7 @@ io.on('connection', (socket) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/submissions', submissionRoutes);
 
 app.get('/', (_req, res) => {
   res.send('FYPMS API is running...');

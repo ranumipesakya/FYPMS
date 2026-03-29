@@ -147,3 +147,33 @@ export const updateProfile = async (req: any, res: Response): Promise<void> => {
     res.status(400).json({ message: error.message });
   }
 };
+
+export const uploadAvatar = async (req: any, res: Response): Promise<void> => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ message: 'No file uploaded' });
+      return;
+    }
+
+    const user = await User.findById(req.user._id);
+    if (user) {
+      // Relative URL for serving via static middleware
+      const avatarUrl = `/uploads/${req.file.filename}`;
+      user.avatar = avatarUrl;
+      const updatedUser = await user.save();
+
+      res.json({
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        avatar: updatedUser.avatar,
+        token: generateToken(updatedUser._id.toString()),
+      });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};

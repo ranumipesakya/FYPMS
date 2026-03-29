@@ -55,10 +55,35 @@ const Profile: React.FC = () => {
     });
 
     const [loading, setLoading] = useState(false);
+    const [avatarLoading, setAvatarLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files?.[0]) return;
+        
+        const file = e.target.files[0];
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        setAvatarLoading(true);
+        try {
+            const { data } = await axios.post('http://localhost:5001/api/auth/profile/avatar', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${user?.token}`
+                }
+            });
+            login({ ...user, ...data } as any);
+            setMessage({ type: 'success', text: 'Avatar updated!' });
+        } catch (error: any) {
+            setMessage({ type: 'error', text: error.response?.data?.message || 'Upload failed' });
+        } finally {
+            setAvatarLoading(false);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -128,8 +153,33 @@ const Profile: React.FC = () => {
                     {/* Left Panel - Summary */}
                     <div className="md:col-span-1">
                         <div className="glass rounded-3xl p-8 border border-white/5 flex flex-col items-center text-center">
-                            <div className="w-24 h-24 bg-brand-blue/10 rounded-full flex items-center justify-center mb-6 border-2 border-brand-blue/20">
-                                <User size={40} className="text-brand-blue" />
+                            <div className="relative group/avatar cursor-pointer">
+                                <div className="w-24 h-24 bg-brand-blue/10 rounded-full flex items-center justify-center mb-6 border-2 border-brand-blue/20 overflow-hidden relative">
+                                    {user?.avatar ? (
+                                        <img 
+                                            src={`http://localhost:5001${user.avatar}`} 
+                                            alt={user.name} 
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <User size={40} className="text-brand-blue" />
+                                    )}
+                                    {avatarLoading && (
+                                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                            <div className="w-6 h-6 border-2 border-brand-blue border-t-transparent rounded-full animate-spin"></div>
+                                        </div>
+                                    )}
+                                </div>
+                                <label className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity bg-black/40 rounded-full cursor-pointer mb-6">
+                                    <input 
+                                        type="file" 
+                                        className="hidden" 
+                                        accept="image/*"
+                                        onChange={handleAvatarChange}
+                                        disabled={avatarLoading}
+                                    />
+                                    <Edit2 size={20} className="text-white" />
+                                </label>
                             </div>
                             <h2 className="text-xl font-black text-white uppercase tracking-tight">{user?.name}</h2>
                             <p className="text-brand-blue text-[10px] font-black uppercase tracking-widest mt-1">{user?.role}</p>

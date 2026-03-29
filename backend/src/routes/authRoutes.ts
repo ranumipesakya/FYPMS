@@ -1,6 +1,7 @@
 import express from 'express';
-import { login, register, getSupervisors, getUsers, getProfile, updateProfile } from '../controllers/authController.js';
+import { login, register, getSupervisors, getUsers, getProfile, updateProfile, uploadAvatar } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
+import { upload } from '../utils/uploadSettings.js';
 
 const router = express.Router();
 
@@ -10,5 +11,6 @@ router.get('/supervisors', getSupervisors);
 router.get('/users', getUsers);
 router.get('/profile', protect, getProfile);
 router.put('/profile', protect, updateProfile);
+router.post('/profile/avatar', protect, upload.single('avatar'), uploadAvatar);
 
 export default router;

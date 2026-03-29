@@ -12,6 +12,7 @@ interface User {
   universityBatch?: string;
   degree?: string;
   faculty?: string;
+  avatar?: string;
   token: string;
 }
 

@@ -9,7 +9,8 @@ import {
   Calendar, 
   FolderKanban,
   User,
-  ChevronDown
+  ChevronDown,
+  FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -27,12 +28,13 @@ const Navbar: React.FC = () => {
   const navLinks = [
     { path: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
     { path: '/projects', label: 'Projects', icon: <FolderKanban size={18} /> },
+    { path: '/submissions', label: 'Submissions', icon: <FileText size={18} /> },
     { path: '/meetings', label: 'Meetings', icon: <Calendar size={18} /> },
     { path: '/chat', label: 'Chat', icon: <MessageSquare size={18} />, badge: true },
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-20 glass border-b border-white/5 shadow-2xl px-6 md:px-12 flex items-center justify-between">
+    <nav className="fixed top-0 left-0 right-0 z-50 h-20 bg-[#020617]/95 backdrop-blur-xl border-b border-white/5 shadow-2xl px-6 md:px-12 flex items-center justify-between">
       <Link to="/" className="flex items-center gap-4 group">
         <div className="bg-brand-blue p-2.5 rounded-2xl group-hover:rotate-12 transition-transform duration-500 shadow-xl shadow-brand-blue/20">
           <GraduationCap className="text-white w-7 h-7" />
@@ -84,8 +86,16 @@ const Navbar: React.FC = () => {
                     isProfileOpen ? 'bg-brand-blue/10 border-brand-blue/50 text-white shadow-lg shadow-brand-blue/10' : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
                   }`}
                 >
-                  <div className="w-8 h-8 rounded-xl bg-brand-blue/10 flex items-center justify-center text-brand-blue group-hover:bg-brand-blue group-hover:text-white transition-all">
-                    <User size={16} />
+                  <div className="w-8 h-8 rounded-xl bg-brand-blue/10 flex items-center justify-center text-brand-blue group-hover:bg-brand-blue group-hover:text-white transition-all overflow-hidden border border-brand-blue/10">
+                    {user.avatar ? (
+                        <img 
+                            src={`http://localhost:5001${user.avatar}`} 
+                            alt={user.name} 
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <User size={16} />
+                    )}
                   </div>
                   <ChevronDown size={14} className={`transition-transform duration-300 ${isProfileOpen ? 'rotate-180 text-brand-blue' : ''}`} />
                 </button>
@@ -98,24 +108,32 @@ const Navbar: React.FC = () => {
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="absolute top-full right-0 mt-3 w-72 glass rounded-[2.5rem] p-4 border-white/10 shadow-3xl z-50 overflow-hidden"
+                        className="absolute top-full right-0 mt-3 w-80 bg-[#0F172A] rounded-[2.5rem] p-4 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-50 overflow-hidden"
                       >
                          {/* Part 1: User Info Header */}
-                         <div className="px-5 py-5 mb-3 bg-white/5 rounded-[2rem] border border-white/5 relative overflow-hidden group/header">
-                            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover/header:opacity-10 transition-opacity">
-                                <GraduationCap size={64} />
+                         <div className="px-5 py-6 mb-4 bg-white/5 rounded-[2rem] border border-white/5 relative overflow-hidden group/header">
+                            <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover/header:opacity-[0.05] transition-opacity">
+                                <GraduationCap size={72} />
                             </div>
-                            <div className="flex items-center gap-4 mb-4 relative z-10">
-                               <div className="w-12 h-12 rounded-2xl bg-brand-blue/20 flex items-center justify-center text-brand-blue border border-brand-blue/20">
-                                  <User size={24} />
+                            <div className="flex items-center gap-4 mb-5 relative z-10">
+                               <div className="w-14 h-14 rounded-2xl bg-brand-blue/30 flex items-center justify-center text-brand-blue border border-brand-blue/30 overflow-hidden shadow-inner">
+                                  {user.avatar ? (
+                                      <img 
+                                          src={`http://localhost:5001${user.avatar}`} 
+                                          alt={user.name} 
+                                          className="w-full h-full object-cover"
+                                      />
+                                  ) : (
+                                      <User size={30} />
+                                  )}
                                </div>
                                <div className="flex flex-col">
-                                  <span className="text-white text-xs font-black uppercase tracking-wider leading-none">{user.name}</span>
-                                  <span className="text-brand-blue text-[9px] font-black uppercase tracking-[0.2em] mt-2 block bg-brand-blue/10 w-fit px-2 py-0.5 rounded-full">{user.role}</span>
+                                  <span className="text-white text-[13px] font-black uppercase tracking-wider leading-none">{user.name}</span>
+                                  <span className="text-brand-blue text-[10px] font-black uppercase tracking-[0.2em] mt-3 block bg-brand-blue/10 w-fit px-3 py-1 rounded-full shadow-lg">{user.role}</span>
                                </div>
                             </div>
-                            <div className="pt-3 border-t border-white/5 relative z-10">
-                               <span className="text-slate-400 text-[9px] font-bold truncate block tracking-wider uppercase opacity-80">{user.email}</span>
+                            <div className="pt-4 border-t border-white/10 relative z-10">
+                               <span className="text-slate-400 text-[10px] font-medium truncate block tracking-wider uppercase opacity-90">{user.email}</span>
                             </div>
                          </div>
 

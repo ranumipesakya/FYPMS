@@ -13,6 +13,7 @@ import Meetings from './pages/Meetings';
 import Chat from './pages/Chat';
 import Projects from './pages/Projects';
 import Profile from './pages/Profile';
+import Submissions from './pages/Submissions';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
@@ -45,6 +46,11 @@ const AppRoutes: React.FC = () => {
         <Route path="/projects" element={
           <ProtectedRoute>
             <Projects />
+          </ProtectedRoute>
+        } />
+        <Route path="/submissions" element={
+          <ProtectedRoute>
+            <Submissions />
           </ProtectedRoute>
         } />
         <Route path="/meetings" element={
