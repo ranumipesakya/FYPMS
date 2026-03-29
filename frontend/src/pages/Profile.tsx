@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 
+import axios from 'axios';
+
 const GraduationCap = ({ size = 28, className = "" }: { size?: number, className?: string }) => (
     <svg 
         xmlns="http://www.w3.org/2000/svg" 
@@ -65,26 +67,17 @@ const Profile: React.FC = () => {
         setMessage({ type: '', text: '' });
 
         try {
-            const response = await fetch('http://localhost:5000/api/auth/profile', {
-                method: 'PUT',
+            const { data } = await axios.put('http://localhost:5001/api/auth/profile', formData, {
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${user?.token}`
-                },
-                body: JSON.stringify(formData)
+                }
             });
 
-            const data = await response.json();
-
-            if (response.ok) {
-                login({ ...user, ...data } as any);
-                setMessage({ type: 'success', text: 'Profile updated successfully!' });
-                setTimeout(() => navigate('/profile'), 1500);
-            } else {
-                setMessage({ type: 'error', text: data.message || 'Failed to update profile' });
-            }
-        } catch (error) {
-            setMessage({ type: 'error', text: 'Something went wrong' });
+            login({ ...user, ...data } as any);
+            setMessage({ type: 'success', text: 'Profile updated successfully!' });
+            setTimeout(() => navigate('/profile'), 1500);
+        } catch (error: any) {
+            setMessage({ type: 'error', text: error.response?.data?.message || 'Something went wrong' });
         } finally {
             setLoading(false);
         }
