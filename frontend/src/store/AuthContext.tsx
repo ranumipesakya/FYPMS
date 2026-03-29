@@ -5,6 +5,13 @@ interface User {
   name: string;
   email: string;
   role: 'student' | 'supervisor' | 'admin';
+  phoneNumber?: string;
+  birthday?: string;
+  nicOrPassport?: string;
+  gender?: 'Male' | 'Female' | 'Other';
+  universityBatch?: string;
+  degree?: string;
+  faculty?: string;
   token: string;
 }
 

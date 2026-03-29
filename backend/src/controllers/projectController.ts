@@ -308,3 +308,34 @@ export const reviewSubmission = async (req: Request, res: Response): Promise<voi
     res.status(400).json({ message: error.message });
   }
 };
+
+export const updateProjectDetails = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = (req as any).user?._id;
+    const { githubLink, demoLink, tags } = req.body;
+
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized user' });
+      return;
+    }
+
+    const project = await Project.findOne({ studentId: userId });
+    if (!project) {
+      res.status(404).json({ message: 'Project not found' });
+      return;
+    }
+
+    if (githubLink !== undefined) project.githubLink = githubLink;
+    if (demoLink !== undefined) project.demoLink = demoLink;
+    if (tags !== undefined) project.tags = tags;
+
+    await project.save();
+
+    res.json({
+      message: 'Project details updated successfully',
+      project
+    });
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};

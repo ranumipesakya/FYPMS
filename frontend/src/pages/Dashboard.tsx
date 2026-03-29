@@ -14,6 +14,7 @@ import {
   Layout
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import ProjectTechnicals from '../components/project/ProjectTechnicals';
 
 type SubmissionItem = {
   _id: string;
@@ -258,6 +259,11 @@ const Dashboard: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {cards.map((card, idx) => renderCard(card, idx))}
             </div>
+          </section>
+
+          {/* New Repository Component */}
+          <section className="pt-8 pb-12">
+            <ProjectTechnicals project={project} user={user} onUpdate={fetchProject} />
           </section>
         </div>
 

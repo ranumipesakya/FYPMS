@@ -12,7 +12,8 @@ import {
   getSupervisorSubmissions,
   getStudentSubmissions,
   openOfficeHoursForAll,
-  reviewSubmission
+  reviewSubmission,
+  updateProjectDetails
 } from '../controllers/projectController.js';
 import { protect, supervisor } from '../middleware/authMiddleware.js';
 
@@ -39,6 +40,7 @@ const upload = multer({ storage });
 router.post('/', protect, createProject);
 router.get('/assigned', protect, supervisor, getAssignedProjects);
 router.get('/student', protect, getStudentProject);
+router.put('/student/details', protect, updateProjectDetails);
 router.put('/:id/status', protect, supervisor, updateProjectStatus);
 router.post('/submissions/upload', protect, upload.single('file'), uploadSubmission);
 router.get('/submissions/supervisor', protect, supervisor, getSupervisorSubmissions);

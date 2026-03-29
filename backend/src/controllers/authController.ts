@@ -91,3 +91,59 @@ export const getUsers = async (_req: Request, res: Response): Promise<void> => {
     res.status(400).json({ message: error.message });
   }
 };
+
+export const getProfile = async (req: any, res: Response): Promise<void> => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const updateProfile = async (req: any, res: Response): Promise<void> => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+      user.name = req.body.name || user.name;
+      // Email cannot be changed
+      user.phoneNumber = req.body.phoneNumber || user.phoneNumber;
+      user.birthday = req.body.birthday || user.birthday;
+      user.nicOrPassport = req.body.nicOrPassport || user.nicOrPassport;
+      user.gender = req.body.gender || user.gender;
+      user.universityBatch = req.body.universityBatch || user.universityBatch;
+      user.degree = req.body.degree || user.degree;
+      user.faculty = req.body.faculty || user.faculty;
+
+      if (req.body.password) {
+        user.password = req.body.password;
+      }
+
+      const updatedUser = await user.save();
+
+      res.json({
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        phoneNumber: updatedUser.phoneNumber,
+        birthday: updatedUser.birthday,
+        nicOrPassport: updatedUser.nicOrPassport,
+        gender: updatedUser.gender,
+        universityBatch: updatedUser.universityBatch,
+        degree: updatedUser.degree,
+        faculty: updatedUser.faculty,
+        token: generateToken(updatedUser._id.toString()),
+      });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};

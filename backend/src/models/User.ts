@@ -8,6 +8,13 @@ export interface IUser extends Document {
   password?: string;
   role: 'student' | 'supervisor' | 'admin';
   avatar?: string;
+  phoneNumber?: string;
+  birthday?: string;
+  nicOrPassport?: string;
+  gender?: 'Male' | 'Female' | 'Other';
+  universityBatch?: string;
+  degree?: string;
+  faculty?: string;
   assignedSupervisor?: mongoose.Types.ObjectId; 
   assignedStudents?: mongoose.Types.ObjectId[];
   comparePassword(password: string): Promise<boolean>;
@@ -25,6 +32,13 @@ const UserSchema = new Schema<IUser>({
   password: { type: String, required: true, minlength: 8 },
   role: { type: String, enum: ['student', 'supervisor', 'admin'], default: 'student' },
   avatar: { type: String },
+  phoneNumber: { type: String },
+  birthday: { type: String },
+  nicOrPassport: { type: String },
+  gender: { type: String, enum: ['Male', 'Female', 'Other'] },
+  universityBatch: { type: String },
+  degree: { type: String },
+  faculty: { type: String },
   assignedSupervisor: { type: Schema.Types.ObjectId, ref: 'User' },
   assignedStudents: [{ type: Schema.Types.ObjectId, ref: 'User' }]
 }, { timestamps: true });

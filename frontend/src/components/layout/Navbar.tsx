@@ -78,7 +78,21 @@ const Navbar: React.FC = () => {
                 <button className="w-10 h-10 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl flex items-center justify-center text-slate-400 hover:text-white transition-all">
                   <User size={18} />
                 </button>
-                <div className="absolute top-full right-0 mt-2 w-48 glass rounded-2xl p-2 opacity-0 translate-y-2 pointer-events-none group-hover/user:opacity-100 group-hover/user:translate-y-0 group-hover/user:pointer-events-auto transition-all border-white/10 shadow-3xl">
+                <div className="absolute top-full right-0 mt-2 w-56 glass rounded-2xl p-2 opacity-0 translate-y-2 pointer-events-none group-hover/user:opacity-100 group-hover/user:translate-y-0 group-hover/user:pointer-events-auto transition-all border-white/10 shadow-3xl">
+                   <Link 
+                      to="/profile"
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all text-[10px] font-black uppercase tracking-widest border-b border-white/5 mb-1"
+                   >
+                      <User size={14} />
+                      View Profile
+                   </Link>
+                   <Link 
+                      to="/profile/edit"
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all text-[10px] font-black uppercase tracking-widest border-b border-white/5 mb-2"
+                   >
+                      <User size={14} className="opacity-50" />
+                      Edit Profile
+                   </Link>
                    <button 
                       onClick={handleLogout}
                       className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all text-[10px] font-black uppercase tracking-widest"

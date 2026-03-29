@@ -11,6 +11,8 @@ import SupervisorDashboard from './pages/SupervisorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Meetings from './pages/Meetings';
 import Chat from './pages/Chat';
+import Projects from './pages/Projects';
+import Profile from './pages/Profile';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
@@ -40,6 +42,11 @@ const AppRoutes: React.FC = () => {
              <Dashboard />}
           </ProtectedRoute>
         } />
+        <Route path="/projects" element={
+          <ProtectedRoute>
+            <Projects />
+          </ProtectedRoute>
+        } />
         <Route path="/meetings" element={
           <ProtectedRoute>
             <Meetings />
@@ -50,8 +57,17 @@ const AppRoutes: React.FC = () => {
             <Chat />
           </ProtectedRoute>
         } />
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        } />
+        <Route path="/profile/:edit" element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        } />
         <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
-        {/* Placeholder for other routes */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </>

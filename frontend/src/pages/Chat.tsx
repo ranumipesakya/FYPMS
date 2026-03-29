@@ -238,30 +238,53 @@ const Chat: React.FC = () => {
                  ) : (
                     <>
                        {conversations.length > 0 ? (
-                          conversations.map((conv) => (
+                          <>
+                             <p className="px-2 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4">Recent Conversations</p>
+                             {conversations.map((conv) => (
+                                <button 
+                                   key={conv._id}
+                                   onClick={() => setSelectedContact({ _id: conv._id, name: conv.contactName, role: conv.contactRole })}
+                                   className={`w-full p-4 rounded-2xl flex items-center gap-4 transition-all group ${
+                                     selectedContact?._id === conv._id ? 'bg-brand-blue/10 border border-brand-blue/20' : 'hover:bg-white/[0.03] border border-transparent'
+                                   }`}
+                                >
+                                   <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-slate-400 group-hover:scale-110 transition-transform">
+                                      <UserIcon size={20} />
+                                   </div>
+                                   <div className="flex-1 text-left min-w-0">
+                                      <div className="flex justify-between items-start mb-1">
+                                         <span className="text-[11px] font-black text-white uppercase tracking-widest truncate">{conv.contactName}</span>
+                                         <span className="text-[8px] text-slate-500 font-bold">{format(new Date(conv.lastMessageTime), 'HH:mm')}</span>
+                                      </div>
+                                      <p className="text-[10px] text-slate-400 truncate font-medium">{conv.lastMessage}</p>
+                                   </div>
+                                </button>
+                             ))}
+                          </>
+                       ) : null}
+
+                       <p className="px-2 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 mt-6">All Contacts</p>
+                       {allUsers.length > 0 ? (
+                          allUsers.map((u) => (
                              <button 
-                                key={conv._id}
-                                onClick={() => setSelectedContact({ _id: conv._id, name: conv.contactName, role: conv.contactRole })}
+                                key={u._id}
+                                onClick={() => startNewChat(u)}
                                 className={`w-full p-4 rounded-2xl flex items-center gap-4 transition-all group ${
-                                  selectedContact?._id === conv._id ? 'bg-brand-blue/10 border border-brand-blue/20' : 'hover:bg-white/[0.03] border border-transparent'
+                                  selectedContact?._id === u._id && conversations.every(c => c._id !== u._id) ? 'bg-brand-blue/10 border border-brand-blue/20' : 'hover:bg-white/[0.03] border border-transparent'
                                 }`}
                              >
-                                <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-slate-400 group-hover:scale-110 transition-transform">
-                                   <UserIcon size={20} />
+                                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-400 grayscale group-hover:grayscale-0 transition-all">
+                                   <UserIcon size={16} />
                                 </div>
-                                <div className="flex-1 text-left min-w-0">
-                                   <div className="flex justify-between items-start mb-1">
-                                      <span className="text-[11px] font-black text-white uppercase tracking-widest truncate">{conv.contactName}</span>
-                                      <span className="text-[8px] text-slate-500 font-bold">{format(new Date(conv.lastMessageTime), 'HH:mm')}</span>
-                                   </div>
-                                   <p className="text-[10px] text-slate-400 truncate font-medium">{conv.lastMessage}</p>
+                                <div className="text-left">
+                                   <div className="text-[11px] font-black text-white uppercase truncate">{u.name}</div>
+                                   <div className="text-[8px] text-slate-500 font-bold">{u.role}</div>
                                 </div>
                              </button>
                           ))
                        ) : (
                           <div className="py-10 text-center px-4">
-                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-600">No conversations yet.</p>
-                             <p className="text-[9px] text-slate-500 mt-2">Search to start messaging</p>
+                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-600">No contacts found.</p>
                           </div>
                        )}
                     </>

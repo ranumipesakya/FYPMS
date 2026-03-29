@@ -12,7 +12,9 @@ import {
   AlertCircle,
   Calendar,
   ClipboardCheck,
-  GraduationCap
+  GraduationCap,
+  ExternalLink,
+  Code
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -234,6 +236,39 @@ const SupervisorDashboard: React.FC = () => {
                     {project.studentId?.name || 'Anonymous Student'}
                   </p>
                 </div>
+
+                <div className="flex gap-4">
+                  {project.githubLink && (
+                    <a 
+                      href={project.githubLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 bg-white/5 hover:bg-white/10 text-white p-3 rounded-2xl border border-white/5 transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#94a3b8] hover:text-[#6366f1]"
+                    >
+                      <Code size={14} /> Repository
+                    </a>
+                  )}
+                  {project.demoLink && (
+                    <a 
+                      href={project.demoLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 bg-white/5 hover:bg-white/10 text-white p-3 rounded-2xl border border-white/5 transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#94a3b8] hover:text-[#10b981]"
+                    >
+                      <ExternalLink size={14} /> Demo
+                    </a>
+                  )}
+                </div>
+
+                {project.tags?.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {project.tags.map((tag: string, i: number) => (
+                      <span key={i} className="px-3 py-1 bg-brand-blue/10 border border-brand-blue/20 rounded-lg text-[8px] font-black text-brand-blue uppercase tracking-widest">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
                 <div className="bg-white/5 rounded-3xl p-6 space-y-4">
                   <h5 className="text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
