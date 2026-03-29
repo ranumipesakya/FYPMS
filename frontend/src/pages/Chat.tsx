@@ -10,7 +10,8 @@ import {
   MessageSquare,
   Sparkles,
   ArrowBigLeftDash,
-  Loader2
+  Loader2,
+  Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
@@ -42,16 +43,29 @@ const Chat: React.FC = () => {
     }
 
     socket.on('receive_message_global', (data) => {
-      // Refresh the conversations list to show last message in real-time
       fetchConversations();
-      
-      // If the message is from or to the current user, we might want to play a sound or show a notification
+    });
+
+    socket.on('message_deleted_global', (deletedId) => {
+      fetchConversations();
     });
     
     return () => {
       socket.disconnect();
     };
   }, [user]);
+
+  useEffect(() => {
+    if (socketRef.current) {
+       socketRef.current.on('message_deleted', (deletedId: string) => {
+          setMessages((prev) => prev.filter(m => m._id !== deletedId));
+       });
+    }
+
+    return () => {
+       socketRef.current?.off('message_deleted');
+    };
+  }, [selectedContact]);
 
   useEffect(() => {
     if (selectedContact && user) {
@@ -148,6 +162,26 @@ const Chat: React.FC = () => {
 
     socketRef.current?.emit('send_message', messageData);
     setNewMessage('');
+  };
+
+  const deleteMessage = async (messageId: string) => {
+    if (!user || !selectedContact) return;
+    try {
+      await axios.delete(`http://localhost:5001/api/chat/${messageId}`, {
+         headers: { Authorization: `Bearer ${user.token}` }
+      });
+
+      const roomId = [user._id, selectedContact._id].sort().join('_');
+      socketRef.current?.emit('delete_message', { 
+         messageId, 
+         roomId, 
+         receiverId: selectedContact._id 
+      });
+
+      setMessages(messages.filter(m => m._id !== messageId));
+    } catch (err) {
+      console.error('Error deleting message:', err);
+    }
   };
 
   if (isLoading) {
@@ -266,13 +300,21 @@ const Chat: React.FC = () => {
                         initial={{ opacity: 0, scale: 0.95, y: 10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         key={msg._id || idx}
-                        className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                        className={`flex ${isOwn ? 'justify-end' : 'justify-start'} group/msg`}
                       >
-                         <div className={`max-w-[70%] space-y-2`}>
+                         <div className={`max-w-[70%] space-y-2 relative`}>
                             <div className={`p-4 rounded-3xl text-sm font-medium leading-relaxed ${
                               isOwn ? 'bg-brand-blue text-white rounded-tr-none' : 'glass text-slate-200 rounded-tl-none border-white/5'
                             }`}>
                                {msg.message}
+                               {isOwn && (
+                                  <button 
+                                    onClick={() => deleteMessage(msg._id)}
+                                    className="absolute -left-10 top-1/2 -translate-y-1/2 p-2 text-slate-500 hover:text-red-400 opacity-0 group-hover/msg:opacity-100 transition-all"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                               )}
                             </div>
                             <div className={`flex items-center gap-2 text-[8px] font-black uppercase tracking-widest text-slate-500 ${isOwn ? 'justify-end' : 'justify-start'}`}>
                                {format(new Date(msg.createdAt || msg.timestamp), 'h:mm a')}

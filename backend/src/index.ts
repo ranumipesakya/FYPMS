@@ -113,6 +113,16 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('delete_message', (data: { messageId: string, roomId: string, receiverId: string }) => {
+    // Notify the room to remove the message from the active window
+    io.to(data.roomId).emit('message_deleted', data.messageId);
+    
+    // Notify the receiver's personal room to potentially update sidebar/notifications
+    io.to(`user_${data.receiverId}`).emit('message_deleted_global', data.messageId);
+    
+    console.log(`🗑️ Message deleted: ${data.messageId}`);
+  });
+
   socket.on('disconnect', () => {
     console.log('👋 A user disconnected');
   });

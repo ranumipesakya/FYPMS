@@ -110,4 +110,27 @@ router.post('/send', protect, async (req: any, res) => {
   }
 });
 
+// Delete a message
+router.delete('/:messageId', protect, async (req: any, res) => {
+  try {
+    const message = await ChatMessage.findById(req.params.messageId);
+    
+    if (!message) {
+      res.status(404).json({ message: 'Message not found.' });
+      return;
+    }
+
+    // Only allow sender to delete their message
+    if (message.senderId.toString() !== req.user.id) {
+       res.status(403).json({ message: 'Unauthorized. You can only delete your own messages.' });
+       return;
+    }
+
+    await ChatMessage.findByIdAndDelete(req.params.messageId);
+    res.json({ message: 'Message deleted successfully.' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error deleting message.' });
+  }
+});
+
 export default router;
