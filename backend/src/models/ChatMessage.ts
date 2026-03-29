@@ -11,7 +11,7 @@ const ChatMessageSchema = new Schema<IChatMessage>({
   senderId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   receiverId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   message: { type: String, required: true },
-  projectId: { type: Schema.Types.ObjectId, ref: 'Project', required: true }
+  projectId: { type: Schema.Types.ObjectId, ref: 'Project', required: false }
 }, { timestamps: true });
 
 export default mongoose.model<IChatMessage>('ChatMessage', ChatMessageSchema);

@@ -270,3 +270,41 @@ export const openOfficeHoursForAll = async (req: Request, res: Response): Promis
     res.status(400).json({ message: error.message });
   }
 };
+
+export const reviewSubmission = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const supervisorId = (req as any).user?._id;
+    const { id } = req.params;
+    const { reviewStatus, feedback } = req.body;
+
+    if (!supervisorId) {
+      res.status(401).json({ message: 'Unauthorized user' });
+      return;
+    }
+
+    if (!reviewStatus || !['approved', 'rejected', 'pending'].includes(reviewStatus)) {
+      res.status(400).json({ message: 'reviewStatus must be approved, rejected or pending' });
+      return;
+    }
+
+    const submission = await Submission.findById(id);
+    if (!submission) {
+      res.status(404).json({ message: 'Submission not found' });
+      return;
+    }
+
+    const project = await Project.findById(submission.projectId).select('supervisorId');
+    if (!project || project.supervisorId?.toString() !== supervisorId.toString()) {
+      res.status(403).json({ message: 'Not allowed to review this submission' });
+      return;
+    }
+
+    submission.reviewStatus = reviewStatus;
+    submission.feedback = feedback || '';
+    await submission.save();
+
+    res.json(submission);
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};

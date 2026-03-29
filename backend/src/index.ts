@@ -12,6 +12,10 @@ import { fileURLToPath } from 'url';
 
 import authRoutes from './routes/authRoutes.js';
 import projectRoutes from './routes/projectRoutes.js';
+import chatRoutes from './routes/chatRoutes.js';
+import ChatMessage from './models/ChatMessage.js';
+import User from './models/User.js';
+import { sendChatNotification } from './utils/mailer.js';
 
 dotenv.config();
 
@@ -67,8 +71,46 @@ io.on('connection', (socket) => {
     console.log(`💬 User joined room: ${roomId}`);
   });
 
-  socket.on('send_message', (data) => {
-    io.to(data.roomId).emit('receive_message', data);
+  socket.on('join_personal', (userId) => {
+    socket.join(`user_${userId}`);
+    console.log(`👤 User joined personal room: user_${userId}`);
+  });
+
+  socket.on('send_message', async (data) => {
+    try {
+      const { senderId, receiverId, message, projectId, roomId } = data;
+      
+      const newMessage = new ChatMessage({
+        senderId,
+        receiverId,
+        message,
+        projectId: mongoose.Types.ObjectId.isValid(projectId) ? projectId : undefined
+      });
+      await newMessage.save();
+
+      const messageWithMeta = {
+        ...data,
+        _id: newMessage._id,
+        createdAt: (newMessage as any).createdAt
+      };
+
+      // 1. Emit to the specific chat room
+      io.to(roomId).emit('receive_message', messageWithMeta);
+
+      // 2. Emit to the receiver's personal room (for sidebar updates/notifications)
+      io.to(`user_${receiverId}`).emit('receive_message_global', messageWithMeta);
+      
+      // 3. Emit to the sender's personal room (for updating other tabs/devices)
+      io.to(`user_${senderId}`).emit('receive_message_global', messageWithMeta);
+
+      const receiver = await User.findById(receiverId);
+      const sender = await User.findById(senderId);
+      if (receiver && sender) {
+        await sendChatNotification(receiver.email, sender.name, message);
+      }
+    } catch (err) {
+      console.error('💬 Socket Error:', err);
+    }
   });
 
   socket.on('disconnect', () => {
@@ -79,6 +121,7 @@ io.on('connection', (socket) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/chat', chatRoutes);
 
 app.get('/', (_req, res) => {
   res.send('FYPMS API is running...');

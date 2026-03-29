@@ -15,6 +15,12 @@ export enum SubmissionVersion {
   FINAL = 'final'
 }
 
+export enum SubmissionReviewStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected'
+}
+
 export interface ISubmission extends Document {
   projectId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
@@ -22,6 +28,7 @@ export interface ISubmission extends Document {
   fileUrl: string;
   version: SubmissionVersion;
   originalFilename: string;
+  reviewStatus: SubmissionReviewStatus;
   grade: number;
   feedback: string;
 }
@@ -38,6 +45,11 @@ const SubmissionSchema = new Schema<ISubmission>(
       default: SubmissionVersion.V1
     },
     originalFilename: { type: String, required: true },
+    reviewStatus: {
+      type: String,
+      enum: Object.values(SubmissionReviewStatus),
+      default: SubmissionReviewStatus.PENDING
+    },
     grade: { type: Number, default: 0, min: 0, max: 100 },
     feedback: { type: String, default: '' }
   },

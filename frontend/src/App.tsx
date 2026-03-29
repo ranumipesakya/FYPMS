@@ -10,6 +10,7 @@ import Register from './pages/Register';
 import SupervisorDashboard from './pages/SupervisorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Meetings from './pages/Meetings';
+import Chat from './pages/Chat';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
@@ -42,6 +43,11 @@ const AppRoutes: React.FC = () => {
         <Route path="/meetings" element={
           <ProtectedRoute>
             <Meetings />
+          </ProtectedRoute>
+        } />
+        <Route path="/chat" element={
+          <ProtectedRoute>
+            <Chat />
           </ProtectedRoute>
         } />
         <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} />} />

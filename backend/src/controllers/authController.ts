@@ -82,3 +82,12 @@ export const getSupervisors = async (req: Request, res: Response): Promise<void>
     res.status(400).json({ message: error.message });
   }
 };
+
+export const getUsers = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const users = await User.find({}).select('name email role _id');
+    res.json(users);
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};
