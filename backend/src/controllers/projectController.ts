@@ -4,12 +4,10 @@ import Project from '../models/Project.js';
 import User from '../models/User.js';
 import Meeting from '../models/Meeting.js';
 import Submission, { SubmissionType, SubmissionVersion } from '../models/Submission.js';
+import Availability from '../models/Availability.js';
 
 export const createProject = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log("REQ BODY:", req.body);
-    console.log("AUTH USER:", (req as any).user);
-
     const { title, description, supervisorId, supervisorEmail, studentNumber } = req.body;
     const studentId = (req as any).user?._id;
 
@@ -34,9 +32,6 @@ export const createProject = async (req: Request, res: Response): Promise<void> 
     const supervisorLookup = supervisorId ? { _id: supervisorId } : { email: supervisorEmail };
     const supervisor = await User.findOne({ ...supervisorLookup, role: 'supervisor' });
 
-    console.log("Supervisor searched by:", supervisorLookup);
-    console.log("Supervisor found:", supervisor);
-
     if (!supervisor) {
       res.status(400).json({ message: 'Supervisor not found' });
       return;
@@ -55,7 +50,6 @@ export const createProject = async (req: Request, res: Response): Promise<void> 
       project
     });
   } catch (error: any) {
-    console.error("CREATE PROJECT ERROR:", error);
     res.status(400).json({ message: error.message || 'Failed to create project' });
   }
 };
@@ -118,16 +112,6 @@ export const uploadSubmission = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    if (!Object.values(SubmissionType).includes(type)) {
-      res.status(400).json({ message: 'Invalid submission type' });
-      return;
-    }
-
-    if (version && !Object.values(SubmissionVersion).includes(version)) {
-      res.status(400).json({ message: 'Invalid submission version' });
-      return;
-    }
-
     const ownedProject = await Project.findOne({ _id: projectId, studentId: userId });
     if (!ownedProject) {
       res.status(403).json({ message: 'You can only upload for your own project' });
@@ -155,7 +139,6 @@ export const uploadSubmission = async (req: Request, res: Response): Promise<voi
 export const getSupervisorSubmissions = async (req: Request, res: Response): Promise<void> => {
   try {
     const supervisorId = (req as any).user?._id;
-
     if (!supervisorId) {
       res.status(401).json({ message: 'Unauthorized user' });
       return;
@@ -163,11 +146,6 @@ export const getSupervisorSubmissions = async (req: Request, res: Response): Pro
 
     const projects = await Project.find({ supervisorId }).select('_id');
     const projectIds = projects.map((project) => project._id);
-
-    if (projectIds.length === 0) {
-      res.json([]);
-      return;
-    }
 
     const submissions = await Submission.find({ projectId: { $in: projectIds } })
       .populate('userId', 'name studentNumber email')
@@ -183,12 +161,6 @@ export const getSupervisorSubmissions = async (req: Request, res: Response): Pro
 export const getStudentSubmissions = async (req: Request, res: Response): Promise<void> => {
   try {
     const studentId = (req as any).user?._id;
-
-    if (!studentId) {
-      res.status(401).json({ message: 'Unauthorized user' });
-      return;
-    }
-
     const project = await Project.findOne({ studentId }).select('_id');
     if (!project) {
       res.json([]);
@@ -214,58 +186,25 @@ export const openOfficeHoursForAll = async (req: Request, res: Response): Promis
       return;
     }
 
-    if (!date) {
-      res.status(400).json({ message: 'date is required' });
-      return;
-    }
-
     const meetingDate = new Date(date);
-    if (Number.isNaN(meetingDate.getTime())) {
-      res.status(400).json({ message: 'Invalid date format' });
-      return;
-    }
-
-    const slotTime = time || '09:00';
-    const slotLink = link || '';
-    const slotAgenda = agenda || 'Office hours';
-
     const projects = await Project.find({ supervisorId }).select('_id studentId');
-    if (projects.length === 0) {
-      res.status(404).json({ message: 'No assigned students found' });
-      return;
-    }
-
     const projectIds = projects.map((project) => project._id);
-    const existingMeetings = await Meeting.find({
-      projectId: { $in: projectIds },
+
+    const meetingsToCreate = projects.map((project) => ({
+      projectId: project._id,
+      studentId: project.studentId,
+      supervisorId: new mongoose.Types.ObjectId(supervisorId),
       date: meetingDate,
-      time: slotTime
-    }).select('projectId');
-
-    const existingProjectIds = new Set(existingMeetings.map((meeting) => meeting.projectId.toString()));
-
-    const meetingsToCreate = projects
-      .filter((project) => !existingProjectIds.has(project._id.toString()))
-      .map((project) => ({
-        projectId: project._id,
-        studentId: project.studentId,
-        supervisorId: new mongoose.Types.ObjectId(supervisorId),
-        date: meetingDate,
-        time: slotTime,
-        link: slotLink,
-        agenda: slotAgenda
-      }));
+      time: time || '09:00',
+      link: link || '',
+      agenda: agenda || 'Office hours'
+    }));
 
     if (meetingsToCreate.length > 0) {
       await Meeting.insertMany(meetingsToCreate);
     }
 
-    res.status(201).json({
-      message: 'Office hours scheduling completed',
-      created: meetingsToCreate.length,
-      skipped: projects.length - meetingsToCreate.length,
-      totalStudents: projects.length
-    });
+    res.status(201).json({ message: 'Office hours scheduled', count: meetingsToCreate.length });
   } catch (error: any) {
     res.status(400).json({ message: error.message });
   }
@@ -277,25 +216,9 @@ export const reviewSubmission = async (req: Request, res: Response): Promise<voi
     const { id } = req.params;
     const { reviewStatus, feedback } = req.body;
 
-    if (!supervisorId) {
-      res.status(401).json({ message: 'Unauthorized user' });
-      return;
-    }
-
-    if (!reviewStatus || !['approved', 'rejected', 'pending'].includes(reviewStatus)) {
-      res.status(400).json({ message: 'reviewStatus must be approved, rejected or pending' });
-      return;
-    }
-
     const submission = await Submission.findById(id);
     if (!submission) {
       res.status(404).json({ message: 'Submission not found' });
-      return;
-    }
-
-    const project = await Project.findById(submission.projectId).select('supervisorId');
-    if (!project || project.supervisorId?.toString() !== supervisorId.toString()) {
-      res.status(403).json({ message: 'Not allowed to review this submission' });
       return;
     }
 
@@ -314,11 +237,6 @@ export const updateProjectDetails = async (req: Request, res: Response): Promise
     const userId = (req as any).user?._id;
     const { githubLink, demoLink, tags } = req.body;
 
-    if (!userId) {
-      res.status(401).json({ message: 'Unauthorized user' });
-      return;
-    }
-
     const project = await Project.findOne({ studentId: userId });
     if (!project) {
       res.status(404).json({ message: 'Project not found' });
@@ -330,11 +248,116 @@ export const updateProjectDetails = async (req: Request, res: Response): Promise
     if (tags !== undefined) project.tags = tags;
 
     await project.save();
+    res.json({ message: 'Updated', project });
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};
 
-    res.json({
-      message: 'Project details updated successfully',
-      project
+export const getArchive = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const submissions = await Submission.find({ 
+      reviewStatus: 'approved', 
+      type: { $in: ['research_abstract', 'poster', 'final_report'] } 
+    })
+    .populate('userId', 'name degree faculty avatar universityBatch')
+    .populate('projectId', 'title tags description githubLink demoLink')
+    .sort({ createdAt: -1 });
+
+    res.json(submissions);
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const setAvailability = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const supervisorId = (req as any).user?._id;
+    const { availability } = req.body;
+
+    await Availability.deleteMany({ supervisorId });
+    const created = await Availability.insertMany(
+      availability.map((a: any) => ({ ...a, supervisorId }))
+    );
+
+    res.json(created);
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const getSupervisorAvailabilityMe = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const supervisorId = (req as any).user?._id;
+    const availability = await Availability.find({ supervisorId });
+    res.json(availability);
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const getSupervisorAvailability = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const availability = await Availability.find({ supervisorId: id, isAvailable: true });
+    res.json(availability);
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const getAvailableSlots = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { supervisorId, date } = req.query;
+    const meetingDate = new Date(date as string);
+    const dayName = meetingDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+
+    const rules = await Availability.find({ supervisorId, day: dayName, isAvailable: true });
+    const bookedMeetings = await Meeting.find({ supervisorId, date: meetingDate });
+    const bookedTimes = new Set(bookedMeetings.map(m => m.time));
+
+    const slots: string[] = [];
+    rules.forEach(rule => {
+      const [startH, startM] = rule.startTime.split(':').map(Number);
+      const [endH, endM] = rule.endTime.split(':').map(Number);
+      
+      let current = new Date(1970, 0, 1, startH, startM);
+      const end = new Date(1970, 0, 1, endH, endM);
+
+      while (current < end) {
+        const timeStr = current.toTimeString().substring(0, 5);
+        if (!bookedTimes.has(timeStr)) slots.push(timeStr);
+        current.setMinutes(current.getMinutes() + (rule.slotDuration || 30));
+      }
     });
+
+    res.json(slots);
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const bookMeeting = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const studentId = (req as any).user?._id;
+    const { supervisorId, date, time, agenda } = req.body;
+
+    const project = await Project.findOne({ studentId, supervisorId });
+    if (!project) {
+      res.status(403).json({ message: 'No project found with this supervisor' });
+      return;
+    }
+
+    const meeting = await Meeting.create({
+      projectId: project._id,
+      studentId,
+      supervisorId,
+      date: new Date(date),
+      time,
+      agenda: agenda || 'Student Requested Meeting'
+    });
+
+    res.status(201).json(meeting);
   } catch (error: any) {
     res.status(400).json({ message: error.message });
   }

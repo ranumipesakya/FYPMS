@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import AvailabilityManager from '../components/supervisor/AvailabilityManager';
 
 type SubmissionItem = {
   _id: string;
@@ -347,6 +348,24 @@ const SupervisorDashboard: React.FC = () => {
           ))}
         </AnimatePresence>
       </div>
+
+      <motion.section 
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mt-32 max-w-4xl"
+      >
+        <div className="flex items-center gap-4 mb-10">
+          <div className="w-12 h-12 rounded-2xl bg-brand-blue/10 flex items-center justify-center text-brand-blue border border-brand-blue/10">
+            <Calendar size={24} />
+          </div>
+          <div>
+            <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Office Hours & <span className="text-brand-blue">Bookings</span></h2>
+            <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mt-1">Configure your availability for project consultations</p>
+          </div>
+        </div>
+        
+        <AvailabilityManager />
+      </motion.section>
     </div>
   );
 };

@@ -13,7 +13,13 @@ import {
   getStudentSubmissions,
   openOfficeHoursForAll,
   reviewSubmission,
-  updateProjectDetails
+  updateProjectDetails,
+  getArchive,
+  setAvailability,
+  getSupervisorAvailability,
+  getSupervisorAvailabilityMe,
+  getAvailableSlots,
+  bookMeeting
 } from '../controllers/projectController.js';
 import { protect, supervisor } from '../middleware/authMiddleware.js';
 
@@ -46,6 +52,12 @@ router.post('/submissions/upload', protect, upload.single('file'), uploadSubmiss
 router.get('/submissions/supervisor', protect, supervisor, getSupervisorSubmissions);
 router.get('/submissions/student', protect, getStudentSubmissions);
 router.put('/submissions/:id/review', protect, supervisor, reviewSubmission);
+router.get('/archive', getArchive);
+router.post('/availability', protect, supervisor, setAvailability);
+router.get('/availability/me', protect, supervisor, getSupervisorAvailabilityMe);
+router.get('/availability/slots', protect, getAvailableSlots);
+router.get('/availability/:id', protect, getSupervisorAvailability);
+router.post('/meetings/book', protect, bookMeeting);
 router.post('/office-hours/open', protect, supervisor, openOfficeHoursForAll);
 
 export default router;
